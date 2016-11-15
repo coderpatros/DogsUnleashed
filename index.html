@@ -29,6 +29,9 @@
     <!-- Include a font I like :) -->
     <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css">
 
+    <!-- Include github button js -->
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+
     <style>
         body {
             font-family: 'Montserrat', sans-serif;
@@ -38,6 +41,16 @@
 
         /* Makes the map take up the whole screen */
         #map { position: absolute; top:0; bottom:0; right:0; left:0; }
+
+        /* This is for the GitHub fork me button */
+        #fork-me {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 20px;
+            text-align: center;
+            z-index: 500;
+        }
 
         /* This is for the disclaimer popup */
         #disclaimer {
@@ -75,6 +88,11 @@
 
 <!-- Div for the map, take note of the id, it's used below -->
 <div id="map"></div>
+
+<!-- Div for GitHub fork me button -->
+<div id="fork-me">
+    <a class="github-button" href="https://github.com/patros/DogsUnleashed/fork" data-style="mega" aria-label="Fork me on GitHub">Fork me on GitHub</a>
+</div>
 
 <!-- Disclaimer popup content -->
 <div id="disclaimer">
