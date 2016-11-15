@@ -2,8 +2,10 @@
 <head>
     <meta charset=utf-8 />
     <title>Dogs Unleashed</title>
+    <!-- Set the viewport for mobile devices -->
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
 
+    <!-- Reference leaflet and esri leaflet for working with arcgis services-->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.1/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.0.1/dist/leaflet-src.js"></script>
     <script src="https://unpkg.com/esri-leaflet@2.0.4"></script>
@@ -11,6 +13,10 @@
     <style>
         body { margin:0; padding:0; }
 
+        /* Makes the map take up the whole screen */
+        #map { position: absolute; top:0; bottom:0; right:0; left:0; }
+
+        /* This is for the disclaimer popup */
         #disclaimer {
             visibility: hidden;
             position: absolute;
@@ -31,14 +37,13 @@
             padding: 15px;
             text-align:center;
         }
-
-        #map { position: absolute; top:0; bottom:0; right:0; left:0; }
     </style>
 </head>
 <body>
 
 <div id="map"></div>
 
+<!-- Disclaimer popup content -->
 <div id="disclaimer">
     <div>
         <h1>Dogs Unleashed</h1>
@@ -49,15 +54,13 @@
 </div>
 
 <script>
+    // Used to display/hide the disclaimer popup
     function disclaimerToggle() {
         el = document.getElementById("disclaimer");
         el.style.visibility = (el.style.visibility == "visible") ? "hidden" : "visible";
     }
 
-    var map = L.map('map').setView([ -26.653127, 153.067969 ], 11);
-
-    L.esri.basemapLayer('Streets').addTo(map);
-
+    // Styles to be applied to each off leash area polygon based on the value of the feature's Times_1 property
     var offLeashStyles = {
         "Dogs prohibited at all times": {
             color: "#ff0000"
@@ -85,15 +88,25 @@
         }
     };
 
+    // Initialise leaflet map, set initial position (-26.653127, 153.067969) and zoom (11)
+    var map = L.map('map').setView([ -26.653127, 153.067969 ], 11);
+    // Set map base layer to the esri "Streets" layer (refer to
+    // https://esri.github.io/esri-leaflet/api-reference/layers/basemap-layer.html for more options)
+    L.esri.basemapLayer('Streets').addTo(map);
+
+    // Initialise a feature layer for the off leash area polygons
     var offLeashAreas = L.esri.featureLayer({
         url: 'https://gisservices.scc.qld.gov.au/arcgis/rest/services/Boundaries/Boundaries_SCRC/MapServer/6',
+        // function used to style the polygons
         style: function (feature) {
+            // default styles
             var style = {
                 color: "#000000",
                 fillOpacity: 0.5,
                 weight: 2
             };
 
+            // apply styles based on the Times_1 feature property
             var additionalStyles = offLeashStyles[feature.properties.Times_1] || {};
             for (var styleName in additionalStyles) {
                 if (additionalStyles.hasOwnProperty(styleName)) {
@@ -101,40 +114,45 @@
                 }
             }
 
+            // we use the style color as the fillColor (polygon background colour)
             style.fillColor = style.color;
             return style;
         }
     });
     offLeashAreas.addTo(map);
+    // this bit sets up the off leash area polygon popups
     offLeashAreas.bindPopup(function (evt) {
         return L.Util.template('<p>{Times_1}<br>{Location}</p>', evt.feature.properties);
     });
 
-    var waterFittingIcons = {
-        "Tap": "https://gisservices.scc.qld.gov.au/arcgis/rest/services/Structure/Structure_SCRC/MapServer/1/images/cf5de1c1b612b850ed6802c92276653c",
-        "Drinking Fountain": "https://gisservices.scc.qld.gov.au/arcgis/rest/services/Structure/Structure_SCRC/MapServer/1/images/e1096fb69dc81ce747553178ddd272f5",
-        "Dog Bowl": "https://gisservices.scc.qld.gov.au/arcgis/rest/services/Structure/Structure_SCRC/MapServer/1/images/b859de9190ff66de02e473ecfeaa0d34"
-    };
-
+    // Initialise a feature layer for dog bowl points of interest
     var waterFittings = L.esri.featureLayer({
         url: 'https://gisservices.scc.qld.gov.au/arcgis/rest/services/Structure/Structure_SCRC/MapServer/1',
+        // this overrides the default map marker icon to use an image
         pointToLayer: function (geojson, latlng) {
             return L.marker(latlng, {
                 icon: L.icon({
-                    iconUrl: waterFittingIcons[geojson.properties.AssetSubType],
+                    iconUrl: "https://gisservices.scc.qld.gov.au/arcgis/rest/services/Structure/Structure_SCRC/MapServer/1/images/b859de9190ff66de02e473ecfeaa0d34",
+                    // override this to match your image size
                     iconSize: [18, 18],
+                    // keep this half/half of above if you want it centered, otherwise adjust it for icons like pins to
+                    // make sure the pin point is in the right spot
                     iconAnchor: [9, 9],
+                    // adjust this to modify the popup point location
                     popupAnchor: [0, -11]
                 })
             });
         }
     });
+    // filter this feature layer based on the feature property AssetSubType
     waterFittings.setWhere("AssetSubType='Dog Bowl'");
     waterFittings.addTo(map);
+    // this bit sets up the dog bowl point of interest popups
     waterFittings.bindPopup(function (evt) {
         return L.Util.template('<p>{AssetSubType}<br>{LocationDesc}</p>', evt.feature.properties);
     });
 
+    // initial display of the disclaimer
     disclaimerToggle();
 </script>
 
