@@ -41,6 +41,7 @@
 </head>
 <body>
 
+<!-- Div for the map, take note of the id, it's used below -->
 <div id="map"></div>
 
 <!-- Disclaimer popup content -->
@@ -88,7 +89,7 @@
         }
     };
 
-    // Initialise leaflet map, set initial position (-26.653127, 153.067969) and zoom (11)
+    // Initialise leaflet map in the element with the id 'map', set initial position (-26.653127, 153.067969) and zoom (11)
     var map = L.map('map').setView([ -26.653127, 153.067969 ], 11);
     // Set map base layer to the esri "Streets" layer (refer to
     // https://esri.github.io/esri-leaflet/api-reference/layers/basemap-layer.html for more options)
