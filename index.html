@@ -131,7 +131,6 @@
     var waterFittings = L.esri.featureLayer({
         url: 'https://gisservices.scc.qld.gov.au/arcgis/rest/services/Structure/Structure_SCRC/MapServer/1',
         pointToLayer: function (geojson, latlng) {
-            console.log(geojson.properties);
             return L.marker(latlng, {
                 icon: L.icon({
                     iconUrl: waterFittingIcons[geojson.properties.AssetSubType],
