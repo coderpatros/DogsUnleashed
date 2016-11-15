@@ -4,7 +4,6 @@
     <title>Dogs Unleashed</title>
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
 
-    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.1/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.0.1/dist/leaflet-src.js"></script>
     <script src="https://unpkg.com/esri-leaflet@2.0.4"></script>
@@ -85,17 +84,6 @@
             color: "#ff6600"
         }
     };
-
-    var $legendItemContainer = $("#legendItemContainer");
-    $.each(offLeashStyles, function(name, styles) {
-        var $legendItem = $("<li></li>");
-        $legendItem.data("item", name);
-        $legendItem.text(name);
-        if (styles.color) $legendItem.css("border-color", styles.color);
-        if (styles.fillColor) $legendItem.css("background-color", styles.fillColor);
-        if (styles.fillOpacity) $legendItem.css("background-transparency", styles.fillOpacity);
-        $legendItem.appendTo($legendItemContainer);
-    });
 
     var offLeashAreas = L.esri.featureLayer({
         url: 'https://gisservices.scc.qld.gov.au/arcgis/rest/services/Boundaries/Boundaries_SCRC/MapServer/6',
