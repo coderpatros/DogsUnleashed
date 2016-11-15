@@ -10,8 +10,15 @@
     <script src="https://unpkg.com/leaflet@1.0.1/dist/leaflet-src.js"></script>
     <script src="https://unpkg.com/esri-leaflet@2.0.4"></script>
 
+    <!-- Include a font I like :) -->
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css">
+
     <style>
-        body { margin:0; padding:0; }
+        body {
+            font-family: 'Montserrat', sans-serif;
+            margin:0;
+            padding:0;
+        }
 
         /* Makes the map take up the whole screen */
         #map { position: absolute; top:0; bottom:0; right:0; left:0; }
@@ -37,6 +44,15 @@
             padding: 15px;
             text-align:center;
         }
+
+        ul.legend {
+            text-align: left;
+            list-style-type: square;
+        }
+
+        ul.legend .legend-text {
+            color: #000;
+        }
     </style>
 </head>
 <body>
@@ -47,10 +63,16 @@
 <!-- Disclaimer popup content -->
 <div id="disclaimer">
     <div>
-        <h1>Dogs Unleashed</h1>
-        <p>This was an idea that came out of the Sunshine Coast Council HackFest 2015.</p>
-        <p>Designated off leash areas may change. Ensure you check current signage at the location.</p>
-        <p><a href='#' onclick='disclaimerToggle()'>Continue</a></p>
+        <strong>Dogs Unleashed</strong>
+        <p>This is a map with all the SCC dog off leash areas and dog water bowls. This was an idea that came out of SCC HackFest 2015.</p>
+        <ul class="legend">
+            <li style="color: #009933"><span class="legend-text">Dogs off leash all the time</span></li>
+            <li style="color: #ffff00"><span class="legend-text">Dogs off leash sometimes (click on area for details)</span></li>
+            <li style="color: #ff6600"><span class="legend-text">Dogs on leash all the time</span></li>
+            <li style="color: #ff0000"><span class="legend-text">Dogs prohibited all the time</span></li>
+        </ul>
+        <p>Designated areas may change. Ensure you check current signage at the location.</p>
+        <p><button type="button" onclick='disclaimerToggle()'>Continue</button></p>
     </div>
 </div>
 
