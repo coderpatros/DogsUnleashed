@@ -107,6 +107,7 @@
         </ul>
         <p><img src="https://gisservices.scc.qld.gov.au/arcgis/rest/services/Structure/Structure_SCRC/MapServer/1/images/b859de9190ff66de02e473ecfeaa0d34">Dog water bowls</p>
         <p><img src="https://gisservices.scc.qld.gov.au/arcgis/rest/services/Society/Society_SCRC/MapServer/5/images/8251fc70af1559cd0ad513d6d839eff5">Beach access near a dog area</p>
+        <p><img src="https://unpkg.com/leaflet@1.0.1/dist/images/marker-icon.png">Your location as reported by your device (if available).</p>
         <p>Click on a dog leash area or point of interest for more information. Designated areas may change. Ensure you check current signage at the location.</p>
         <p><button type="button" onclick='disclaimerToggle()'>Continue</button></p>
     </div>
@@ -277,6 +278,8 @@
 
     // this section sets up location awareness if available
     if (navigator) {
+        var userLocationMarker;
+
         // set the initial map position and zoom in if possible
         navigator.geolocation.getCurrentPosition(
             function(pos) {
@@ -292,6 +295,17 @@
             }
         );
 
+        // create and update a you are here style marker
+        navigator.geolocation.watchPosition(
+            function(pos) {
+                if (pos.coords.accuracy < 50) {
+                    if (!userLocationMarker) {
+                        userLocationMarker = L.marker([pos.coords.latitude, pos.coords.longitude]).addTo(map);
+                    }
+                    userLocationMarker.setLatLng(L.latLng(pos.coords.latitude, pos.coords.longitude));
+                }
+            }
+        );
     }
 
     // initial display of the disclaimer
