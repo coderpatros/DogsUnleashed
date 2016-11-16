@@ -275,6 +275,24 @@
     offLeashAreas.on("load", filterBeachAccessPoints);
     beachAccess.on("load", filterBeachAccessPoints);
 
+    // this section sets up location awareness if available
+    if (navigator) {
+        // set the initial map position and zoom in if possible
+        navigator.geolocation.getCurrentPosition(
+            function(pos) {
+                var newLocation = L.latLng(pos.coords.latitude, pos.coords.longitude);
+                // only jump the map if the distance makes sense
+                if (map.getCenter().distanceTo(newLocation) < 50000) {
+                    map.setView([ pos.coords.latitude, pos.coords.longitude ], 15);
+                }
+            },
+            undefined,
+            {
+                timeout: 5000
+            }
+        );
+
+    }
 
     // initial display of the disclaimer
     disclaimerToggle();
