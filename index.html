@@ -106,6 +106,7 @@
             <li style="color: #ff0000"><span class="legend-text">Dogs prohibited all the time</span></li>
         </ul>
         <p><img src="https://gisservices.scc.qld.gov.au/arcgis/rest/services/Structure/Structure_SCRC/MapServer/1/images/b859de9190ff66de02e473ecfeaa0d34">Dog water bowls</p>
+        <p><img src="https://gisservices.scc.qld.gov.au/arcgis/rest/services/Society/Society_SCRC/MapServer/5/images/8251fc70af1559cd0ad513d6d839eff5">Beach access near a dog area</p>
         <p>Designated areas may change. Ensure you check current signage at the location.</p>
         <p><button type="button" onclick='disclaimerToggle()'>Continue</button></p>
     </div>
@@ -209,6 +210,71 @@
     waterFittings.bindPopup(function (evt) {
         return L.Util.template('<p>{AssetSubType}<br>{LocationDesc}</p>', evt.feature.properties);
     });
+
+    // Initialise a feature layer for beach access points near dog areas
+    // this does a bit of trickery to filter the beach access points to only display if they are within 250m of a dog area boundary
+    function filterBeachAccessPoints() {
+        beachAccess.eachFeature(function(beachAccessLayer) {
+            var include = false;
+            offLeashAreas.eachFeature(function(offLeashAreaLayer) {
+                for (var i=0; i<offLeashAreaLayer._latlngs.length; i++) {
+                    for (var j=0; j<offLeashAreaLayer._latlngs[i].length; j++) {
+                        var points = offLeashAreaLayer._latlngs[i][j];
+                        if (points.lat && points.lng) {
+                            points = [points];
+                        }
+                        for (var k=0; k<points.length; k++) {
+                            if (beachAccessLayer.getLatLng().distanceTo(points[k]) < 250) {
+                                include = true;
+                                break;
+                            }
+                        }
+                        if (include) break;
+                    }
+                    if (include) break;
+                }
+            });
+            try {
+                if (include) {
+                    L.DomUtil.setOpacity(beachAccessLayer._icon, 1);
+                } else {
+                    L.DomUtil.setOpacity(beachAccessLayer._icon, 0);
+                }
+            } catch (e) {
+                // we'll ignore this, the beach access point doesn't have a dom element
+            }
+        });
+    }
+
+    var beachAccess = L.esri.featureLayer({
+        url: 'https://gisservices.scc.qld.gov.au/arcgis/rest/services/Society/Society_SCRC/MapServer/5',
+        // this overrides the default map marker icon to use an image
+        pointToLayer: function (geojson, latlng) {
+            return L.marker(latlng, {
+                icon: L.icon({
+                    iconUrl: "https://gisservices.scc.qld.gov.au/arcgis/rest/services/Society/Society_SCRC/MapServer/5/images/8251fc70af1559cd0ad513d6d839eff5",
+                    // override this to match your image size
+                    iconSize: [18, 18],
+                    // keep this half/half of above if you want it centered, otherwise adjust it for icons like pins to
+                    // make sure the pin point is in the right spot
+                    iconAnchor: [9, 9],
+                    // adjust this to modify the popup point location
+                    popupAnchor: [0, -11]
+                })
+            });
+        }
+    });
+    // filter this feature layer based on the feature property AssetSubType
+    beachAccess.setWhere("AccessType='Pedestrian Access'");
+    beachAccess.addTo(map);
+    // this bit sets up the beach access point of interest popups
+    beachAccess.bindPopup(function (evt) {
+        return L.Util.template('<p>{LocationDesc}<br>{Street}<br>{Suburb}</p>', evt.feature.properties);
+    });
+    // sets up the filtering
+    offLeashAreas.on("load", filterBeachAccessPoints);
+    beachAccess.on("load", filterBeachAccessPoints);
+
 
     // initial display of the disclaimer
     disclaimerToggle();
