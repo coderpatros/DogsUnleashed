@@ -269,7 +269,7 @@
     beachAccess.addTo(map);
     // this bit sets up the beach access point of interest popups
     beachAccess.bindPopup(function (evt) {
-        return L.Util.template('<p>{LocationDesc}<br>{Street}<br>{Suburb}</p>', evt.feature.properties);
+        return L.Util.template('<p>{LocationDescription}<br>{Street}, {Suburb}</p>', evt.feature.properties);
     });
     // sets up the filtering
     offLeashAreas.on("load", filterBeachAccessPoints);
