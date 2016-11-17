@@ -82,12 +82,39 @@
         ul.legend .legend-text {
             color: #000;
         }
+
+        #basemaps-wrapper {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 400;
+            background: white;
+            padding: 10px;
+        }
+        #basemaps {
+            margin-bottom: 5px;
+        }
+
     </style>
 </head>
 <body>
 
 <!-- Div for the map, take note of the id, it's used below -->
 <div id="map"></div>
+
+<!-- Div for the map type selector -->
+<div id="basemaps-wrapper" class="leaflet-bar">
+    <select name="basemaps" id="basemaps" onChange="changeBasemap(basemaps)">
+        <option value="Streets">Streets</option>
+        <option value="Topographic">Topographic</option>
+        <!--<option value="NationalGeographic">National Geographic</option>-->
+        <!--<option value="Oceans">Oceans</option>-->
+        <option value="Gray">Gray</option>
+        <option value="DarkGray">Dark Gray</option>
+        <option value="Imagery">Imagery</option>
+        <!--<option value="ShadedRelief">Shaded Relief</option>-->
+    </select>
+</div>
 
 <!-- Div for GitHub fork me button -->
 <div id="fork-me">
@@ -150,9 +177,35 @@
 
     // Initialise leaflet map in the element with the id 'map', set initial position (-26.653127, 153.067969) and zoom (11)
     var map = L.map('map').setView([ -26.653127, 153.067969 ], 11);
-    // Set map base layer to the esri "Streets" layer (refer to
-    // https://esri.github.io/esri-leaflet/api-reference/layers/basemap-layer.html for more options)
-    L.esri.basemapLayer('Streets').addTo(map);
+
+    // Set up map type selector
+    var layer, labelsLayer;
+
+    function setBasemap(basemapName) {
+        if (layer) map.removeLayer(layer);
+        if (labelsLayer) map.removeLayer(labelsLayer);
+
+        layer = L.esri.basemapLayer(basemapName);
+        if (basemapName === 'ShadedRelief'
+            || basemapName === 'Oceans'
+            || basemapName === 'Gray'
+            || basemapName === 'DarkGray'
+            || basemapName === 'Imagery'
+            || basemapName === 'Terrain'
+        ) {
+            labelsLayer = L.esri.basemapLayer(basemapName + 'Labels');
+        }
+
+        if (layer) map.addLayer(layer);
+        if (labelsLayer) map.addLayer(labelsLayer);
+    }
+
+    function changeBasemap(basemaps){
+        var basemap = basemaps.value;
+        setBasemap(basemap);
+    }
+
+    setBasemap("Streets");
 
     // Initialise a feature layer for the off leash area polygons
     var offLeashAreas = L.esri.featureLayer({
