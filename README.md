@@ -1,6 +1,6 @@
 # Dogs Unleashed
 
-This is a map with all the SCC dog off leash areas and dog water bowls. This was an idea that came out of SCC HackFest 2015.
+This is a map with all the SCC dog off leash areas and dog water bowls.
 
 It uses leaflet and esri leaflet to render the map.
 
