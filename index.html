@@ -1,59 +1,29 @@
-<!--
-    Copyright 2016 Patrick Dwyer
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>
--->
 <html>
 <head>
-    <meta charset=utf-8 />
+    <meta charset="utf-8" />
     <title>Dogs Unleashed</title>
-    <!-- Set the viewport for mobile devices -->
-    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
-
-    <!-- Reference leaflet and esri leaflet for working with arcgis services-->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.1/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.0.1/dist/leaflet-src.js"></script>
-    <script src="https://unpkg.com/esri-leaflet@2.0.4"></script>
-
-    <!-- Include a font I like :) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet-src.js"></script>
+    <script src="https://unpkg.com/esri-leaflet@2.0.7"></script>
     <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css">
-
-    <!-- Include github button js -->
-    <script async defer src="https://buttons.github.io/buttons.js"></script>
-
     <style>
-        body {
+        body, button {
             font-family: 'Montserrat', sans-serif;
+            font-size: 10pt;
+        }
+
+        body {
             margin:0;
             padding:0;
         }
 
-        /* Makes the map take up the whole screen */
-        #map { position: absolute; top:0; bottom:0; right:0; left:0; }
-
-        /* This is for the GitHub fork me button */
-        #fork-me {
-            position: absolute;
-            left: 0;
-            right: 0;
-            bottom: 20px;
-            text-align: center;
-            z-index: 500;
+        html, body, #map {
+            height: 100vh;
+            width: 100vw;
         }
 
-        /* This is for the disclaimer popup */
-        #disclaimer {
+        .dialog {
             visibility: hidden;
             position: absolute;
             left: 0;
@@ -64,9 +34,9 @@
             z-index: 1000;
             background-color: rgba(0, 0, 0, 0.75);
         }
-
-        #disclaimer div {
-            width: 300px;
+        .dialog>div {
+            width: 90%;
+            max-width: 500px;
             margin: 50px auto;
             background-color: #fff;
             border: 1px solid #000;
@@ -74,296 +44,262 @@
             text-align:center;
         }
 
-        ul.legend {
-            text-align: left;
-            list-style-type: square;
-        }
-
-        ul.legend .legend-text {
-            color: #000;
-        }
-
-        #basemaps-wrapper {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            z-index: 400;
-            background: white;
+        .map-control {
+            min-width: 100px;
+            font-size: 120%;
+            font-weight: bold;
+            background-color: white;
+            border-radius: 4px;
+            border-color: rgb(204, 204, 204);
+            border-style: solid;
             padding: 10px;
         }
-        #basemaps {
-            margin-bottom: 5px;
+
+        #legendItemContainer {
+            list-style: none;
+            padding: 0;
+            max-width: 300px;
+            display: inline-block;
         }
 
+        #legendItemContainer li {
+            text-align: left;
+            padding-bottom: 5px;
+        }
+
+        #legendItemContainer img, #legendItemContainer div.legend-color {
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        #legendItemContainer div.legend-color {
+            width: 28px;
+            height: 28px;
+            display: inline-block;
+        }
     </style>
 </head>
 <body>
-
-<!-- Div for the map, take note of the id, it's used below -->
 <div id="map"></div>
-
-<!-- Div for the map type selector -->
-<div id="basemaps-wrapper" class="leaflet-bar">
-    <select name="basemaps" id="basemaps" onChange="changeBasemap(basemaps)">
-        <option value="Streets">Streets</option>
-        <option value="Topographic">Topographic</option>
-        <!--<option value="NationalGeographic">National Geographic</option>-->
-        <!--<option value="Oceans">Oceans</option>-->
-        <option value="Gray">Gray</option>
-        <option value="DarkGray">Dark Gray</option>
-        <option value="Imagery">Imagery</option>
-        <!--<option value="ShadedRelief">Shaded Relief</option>-->
-    </select>
-</div>
-
-<!-- Div for GitHub fork me button -->
-<div id="fork-me">
-    <a class="github-button" href="https://github.com/patros/DogsUnleashed/fork" data-style="mega" aria-label="Fork me on GitHub">Fork me on GitHub</a>
-</div>
-
-<!-- Disclaimer popup content -->
-<div id="disclaimer">
+<div id="disclaimer" class="dialog" style="visibility: visible">
     <div>
         <strong>Dogs Unleashed</strong>
-        <p>This is a map with all the SCC dog off leash areas and dog water bowls. This was an idea that came out of SCC HackFest 2015.</p>
-        <ul class="legend">
-            <li style="color: #009933"><span class="legend-text">Dogs off leash all the time</span></li>
-            <li style="color: #ffff00"><span class="legend-text">Dogs off leash sometimes</span></li>
-            <li style="color: #ff6600"><span class="legend-text">Dogs on leash all the time</span></li>
-            <li style="color: #ff0000"><span class="legend-text">Dogs prohibited all the time</span></li>
-        </ul>
-        <p><img src="https://gisservices.scc.qld.gov.au/arcgis/rest/services/Structure/Structure_SCRC/MapServer/1/images/b859de9190ff66de02e473ecfeaa0d34">Dog water bowls</p>
-        <p><img src="https://gisservices.scc.qld.gov.au/arcgis/rest/services/Society/Society_SCRC/MapServer/5/images/8251fc70af1559cd0ad513d6d839eff5">Beach access near a dog area</p>
-        <p><img src="https://unpkg.com/leaflet@1.0.1/dist/images/marker-icon.png">Your location as reported by your device (if available).</p>
-        <p>Click on a dog leash area or point of interest for more information. Designated areas may change. Ensure you check current signage at the location.</p>
-        <p><button type="button" onclick='disclaimerToggle()'>Continue</button></p>
+        <p>This is an interactive map which displays dog off leash areas as well as water points.</p>
+        <p>Click/touch an area for more detail.</p>
+        <p>Displayed information may incomplete or incorrect.</p>
+        <p>All data is provided by <a href="https://www.sunshinecoast.qld.gov.au" target="_blank">Sunshine Coast Council</a>.</p>
+        <p>Find even more data on the <a href="https://data.sunshinecoast.qld.gov.au" target="_blank">Sunshine Coast Council Open Data Portal</a></p>
+        <p><button type="button" onclick='dismissDialog("disclaimer")'>Continue</button></p>
     </div>
 </div>
-
+<div id="legend" class="dialog">
+    <div>
+        <strong>Legend</strong><br>
+        <ul id="legendItemContainer"></ul>
+        <p><button type="button" onclick='dismissDialog("legend")'>Close</button></p>
+    </div>
+</div>
 <script>
-    // Used to display/hide the disclaimer popup
-    function disclaimerToggle() {
-        el = document.getElementById("disclaimer");
-        el.style.visibility = (el.style.visibility == "visible") ? "hidden" : "visible";
+    function dismissDialog(dialogId) {
+        document.getElementById(dialogId).style.visibility = 'hidden';
     }
 
-    // Styles to be applied to each off leash area polygon based on the value of the feature's Times_1 property
-    var offLeashStyles = {
-        "Dogs prohibited at all times": {
-            color: "#ff0000"
-        },
-        "Dogs off leash at all times": {
-            color: "#009933"
-        },
-        "Dogs off leash at times indicated on signs": {
-            color: "#ffff00"
-        },
-        "Dogs off leash 4pm to 8am": {
-            color: "#ffff00"
-        },
-        "Dogs off leash 5am to 8am and 5pm to 8pm": {
-            color: "#ffff00"
-        },
-        "Dogs off leash May to October, 4pm to 8am": {
-            color: "#ffff00"
-        },
-        "Pedestrian Thoroughfare - dogs on leash at all times": {
-            color: "#ff6600"
-        },
-        "Spectators with dogs on leash at all times allowed": {
-            color: "#ff6600"
+    function displayDialog(dialogId) {
+        document.getElementById(dialogId).style.visibility = 'visible';
+    }
+
+    function POI(label, url, iconUrl, where) {
+        return {
+            label: label,
+            url: url,
+            iconUrl: iconUrl,
+            where: where
         }
+    }
+
+    function Area(label, url, defaultStyle, where) {
+        return {
+            label: label,
+            url: url,
+            defaultStyle: defaultStyle,
+            where: where
+        }
+    }
+
+    function Control(label, position, clickHandler) {
+        return {
+            label: label,
+            position: position,
+            clickHandler: clickHandler
+        }
+    }
+
+    var map, locationMarker, locationAccuracyCircle;
+
+    // setup base map
+    map = L.map('map').setView([ -26.653127, 153.067969 ], 11);
+    L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v10/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoicGF0cm9zIiwiYSI6ImNpenNjcjk4cTAwenIycXBjdjVnbHFwdzUifQ.fk6Q_TamIFNjQDFZ5AZVNA', {
+        attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+        maxZoom: 18
+    }).addTo(map);
+    L.control.scale().addTo(map);
+
+    var controls = [
+        Control(
+            'Legend',
+            'topright',
+            function() { displayDialog('legend'); })
+    ];
+
+    var pois = [
+        POI(
+            'Dog Water Bowls',
+            'https://gisservices.scc.qld.gov.au/arcgis/rest/services/Structure/Structure_SCRC/MapServer/1',
+            'markers/water.png',
+            "AssetSubType='Dog Bowl'"
+        )
+//        POI(
+//            'Beach Access Point',
+//            'https://gisservices.scc.qld.gov.au/arcgis/rest/services/Society/Society_SCRC/MapServer/5',
+//            'markers/beach-access.png',
+//            "AccessType='Pedestrian Access'"
+//        )
+    ];
+
+    var DOGS_OK = "#009933";
+    var DOGS_SOMETIMES_OK = "#ffff00";
+    var DOGS_NEVER_OK = "#ff0000";
+    var DOGS_ON_LEASH = "#ff6600";
+    var OTHER = "#000000";
+
+    var offLeashStyles = {
+        "Dogs prohibited at all times": DOGS_NEVER_OK,
+        "Prohibited animal area at all times": DOGS_NEVER_OK,
+        "Dogs off leash at all times": DOGS_OK,
+        "Dogs off leash at times indicated on signs": DOGS_SOMETIMES_OK,
+        "Dogs off leash 4pm to 8am": DOGS_SOMETIMES_OK,
+        "Dogs off leash 5am to 8am and 5pm to 8pm": DOGS_SOMETIMES_OK,
+        "Dogs off leash May to October, 4pm to 8am": DOGS_SOMETIMES_OK,
+        "Pedestrian Thoroughfare - dogs on leash at all times": DOGS_ON_LEASH,
+        "Spectators with dogs on leash at all times allowed": DOGS_ON_LEASH,
+        "Other": OTHER
     };
 
-    // Initialise leaflet map in the element with the id 'map', set initial position (-26.653127, 153.067969) and zoom (11)
-    var map = L.map('map').setView([ -26.653127, 153.067969 ], 11);
+    var offLeashLegendItems = [
+        [DOGS_OK, 'Dogs off leash at all times'],
+        [DOGS_SOMETIMES_OK, 'Dogs off leash at specified times'],
+        [DOGS_ON_LEASH, 'Dogs on leash at all times'],
+        [DOGS_NEVER_OK, 'Dogs prohibited at all times'],
+        [OTHER, 'Other']
+    ];
 
-    // Set up map type selector
-    var layer, labelsLayer;
-
-    function setBasemap(basemapName) {
-        if (layer) map.removeLayer(layer);
-        if (labelsLayer) map.removeLayer(labelsLayer);
-
-        layer = L.esri.basemapLayer(basemapName);
-        if (basemapName === 'ShadedRelief'
-            || basemapName === 'Oceans'
-            || basemapName === 'Gray'
-            || basemapName === 'DarkGray'
-            || basemapName === 'Imagery'
-            || basemapName === 'Terrain'
-        ) {
-            labelsLayer = L.esri.basemapLayer(basemapName + 'Labels');
-        }
-
-        if (layer) map.addLayer(layer);
-        if (labelsLayer) map.addLayer(labelsLayer);
-    }
-
-    function changeBasemap(basemaps){
-        var basemap = basemaps.value;
-        setBasemap(basemap);
-    }
-
-    setBasemap("Streets");
-
-    // Initialise a feature layer for the off leash area polygons
     var offLeashAreas = L.esri.featureLayer({
         url: 'https://gisservices.scc.qld.gov.au/arcgis/rest/services/Boundaries/Boundaries_SCRC/MapServer/6',
-        // function used to style the polygons
         style: function (feature) {
-            // default styles
             var style = {
-                color: "#000000",
                 fillOpacity: 0.5,
                 weight: 2
             };
 
-            // apply styles based on the Times_1 feature property
-            var additionalStyles = offLeashStyles[feature.properties.Times_1] || {};
-            for (var styleName in additionalStyles) {
-                if (additionalStyles.hasOwnProperty(styleName)) {
-                    style[styleName] = additionalStyles[styleName];
-                }
-            }
-
-            // we use the style color as the fillColor (polygon background colour)
+            style.color = offLeashStyles[feature.properties.Times_1] || OTHER;
             style.fillColor = style.color;
+
             return style;
         }
     });
-    offLeashAreas.addTo(map);
-    // this bit sets up the off leash area polygon popups
+
     offLeashAreas.bindPopup(function (evt) {
         return L.Util.template('<p>{Times_1}<br>{Location}</p>', evt.feature.properties);
     });
 
-    // Initialise a feature layer for dog bowl points of interest
-    var waterFittings = L.esri.featureLayer({
-        url: 'https://gisservices.scc.qld.gov.au/arcgis/rest/services/Structure/Structure_SCRC/MapServer/1',
-        // this overrides the default map marker icon to use an image
-        pointToLayer: function (geojson, latlng) {
-            return L.marker(latlng, {
-                icon: L.icon({
-                    iconUrl: "https://gisservices.scc.qld.gov.au/arcgis/rest/services/Structure/Structure_SCRC/MapServer/1/images/b859de9190ff66de02e473ecfeaa0d34",
-                    // override this to match your image size
-                    iconSize: [18, 18],
-                    // keep this half/half of above if you want it centered, otherwise adjust it for icons like pins to
-                    // make sure the pin point is in the right spot
-                    iconAnchor: [9, 9],
-                    // adjust this to modify the popup point location
-                    popupAnchor: [0, -11]
-                })
-            });
-        }
-    });
-    // filter this feature layer based on the feature property AssetSubType
-    waterFittings.setWhere("AssetSubType='Dog Bowl'");
-    waterFittings.addTo(map);
-    // this bit sets up the dog bowl point of interest popups
-    waterFittings.bindPopup(function (evt) {
-        return L.Util.template('<p>{AssetSubType}<br>{LocationDesc}</p>', evt.feature.properties);
-    });
+    offLeashAreas.addTo(map);
 
-    // Initialise a feature layer for beach access points near dog areas
-    // this does a bit of trickery to filter the beach access points to only display if they are within 250m of a dog area boundary
-    function filterBeachAccessPoints() {
-        beachAccess.eachFeature(function(beachAccessLayer) {
-            var include = false;
-            offLeashAreas.eachFeature(function(offLeashAreaLayer) {
-                for (var i=0; i<offLeashAreaLayer._latlngs.length; i++) {
-                    for (var j=0; j<offLeashAreaLayer._latlngs[i].length; j++) {
-                        var points = offLeashAreaLayer._latlngs[i][j];
-                        if (points.lat && points.lng) {
-                            points = [points];
-                        }
-                        for (var k=0; k<points.length; k++) {
-                            if (beachAccessLayer.getLatLng().distanceTo(points[k]) < 250) {
-                                include = true;
-                                break;
-                            }
-                        }
-                        if (include) break;
-                    }
-                    if (include) break;
+    // setup legend items and poi layers
+    var legendItemContainer = document.getElementById('legendItemContainer');
+    var poiLayers = [];
+    for (var i=0; i<pois.length; i++) {
+        (function() {
+            var poi = pois[i];
+
+            var legendItem = document.createElement('li');
+            var legendImage = document.createElement('img');
+            legendImage.src = poi.iconUrl;
+            legendItem.appendChild(legendImage);
+            var legendText = document.createTextNode(poi.label);
+            legendItem.appendChild(legendText);
+            legendItemContainer.appendChild(legendItem);
+
+            var layer = L.esri.featureLayer({
+                url:  poi.url,
+                pointToLayer: function(geojson, latlng) {
+                    return L.marker(latlng, {
+                        icon: L.icon({
+                            iconUrl: poi.iconUrl,
+                            iconSize: [32, 37],
+                            iconAnchor: [16, 37],
+                            popupAnchor: [0, -11]
+                        })
+                    });
                 }
             });
-            try {
-                if (include) {
-                    L.DomUtil.setOpacity(beachAccessLayer._icon, 1);
-                } else {
-                    L.DomUtil.setOpacity(beachAccessLayer._icon, 0);
-                }
-            } catch (e) {
-                // we'll ignore this, the beach access point doesn't have a dom element
-            }
-        });
+            if (poi.where) layer.setWhere(poi.where);
+            layer.addTo(map);
+            poiLayers.push(layer);
+        })();
     }
 
-    var beachAccess = L.esri.featureLayer({
-        url: 'https://gisservices.scc.qld.gov.au/arcgis/rest/services/Society/Society_SCRC/MapServer/5',
-        // this overrides the default map marker icon to use an image
-        pointToLayer: function (geojson, latlng) {
-            return L.marker(latlng, {
-                icon: L.icon({
-                    iconUrl: "https://gisservices.scc.qld.gov.au/arcgis/rest/services/Society/Society_SCRC/MapServer/5/images/8251fc70af1559cd0ad513d6d839eff5",
-                    // override this to match your image size
-                    iconSize: [18, 18],
-                    // keep this half/half of above if you want it centered, otherwise adjust it for icons like pins to
-                    // make sure the pin point is in the right spot
-                    iconAnchor: [9, 9],
-                    // adjust this to modify the popup point location
-                    popupAnchor: [0, -11]
-                })
-            });
-        }
-    });
-    // filter this feature layer based on the feature property AssetSubType
-    beachAccess.setWhere("AccessType='Pedestrian Access'");
-    beachAccess.addTo(map);
-    // this bit sets up the beach access point of interest popups
-    beachAccess.bindPopup(function (evt) {
-        return L.Util.template('<p>{LocationDescription}<br>{Street}, {Suburb}</p>', evt.feature.properties);
-    });
-    // sets up the filtering
-    offLeashAreas.on("load", filterBeachAccessPoints);
-    beachAccess.on("load", filterBeachAccessPoints);
-
-    // this section sets up location awareness if available
-    if (navigator) {
-        var userLocationMarker;
-
-        // set the initial map position and zoom in if possible
-        navigator.geolocation.getCurrentPosition(
-            function(pos) {
-                var newLocation = L.latLng(pos.coords.latitude, pos.coords.longitude);
-                // only jump the map if the distance makes sense
-                if (map.getCenter().distanceTo(newLocation) < 50000) {
-                    map.setView([ pos.coords.latitude, pos.coords.longitude ], 15);
-                }
-            },
-            undefined,
-            {
-                timeout: 5000
-            }
-        );
-
-        // create and update a you are here style marker
-        navigator.geolocation.watchPosition(
-            function(pos) {
-                if (pos.coords.accuracy < 50) {
-                    if (!userLocationMarker) {
-                        userLocationMarker = L.marker([pos.coords.latitude, pos.coords.longitude]).addTo(map);
-                    }
-                    userLocationMarker.setLatLng(L.latLng(pos.coords.latitude, pos.coords.longitude));
-                }
-            }
-        );
+    for (var i=0; i<offLeashLegendItems.length; i++) {
+        (function() {
+            var color = offLeashLegendItems[i][0];
+            var text = offLeashLegendItems[i][1];
+            var legendItem = document.createElement('li');
+            var legendColorDiv = document.createElement('div');
+            legendColorDiv.className = 'legend-color';
+            legendColorDiv.style = 'background-color: ' + color;
+            legendItem.appendChild(legendColorDiv);
+            var legendText = document.createTextNode(text);
+            legendItem.appendChild(legendText);
+            legendItemContainer.appendChild(legendItem);
+        })();
     }
 
-    // initial display of the disclaimer
-    disclaimerToggle();
+    // setup device location handling
+    function onLocationFound(e) {
+        var radius = e.accuracy / 2;
+
+        if (locationMarker) {
+            locationMarker.setLatLng(e.latlng);
+        } else {
+            locationMarker = L.marker(e.latlng).addTo(map);
+        }
+
+        if (locationAccuracyCircle) {
+            locationAccuracyCircle.setLatLng(e.latlng).setRadius(radius);
+        } else {
+            locationAccuracyCircle = L.circle(e.latlng, radius).addTo(map);
+        }
+    }
+    map.on('locationfound', onLocationFound);
+    map.locate({setView: true, maxZoom: 16});
+
+    // setup controls
+    for (var i=0; i<controls.length; i++) {
+        (function() {
+            var control = controls[i];
+            var Control = L.Control.extend({
+                onAdd: function(map) {
+                    var leafletControl = L.DomUtil.create('button');
+                    leafletControl.type = 'button';
+                    leafletControl.className = 'map-control';
+                    leafletControl.appendChild(document.createTextNode(control.label));
+                    leafletControl.onclick = control.clickHandler || function() { alert(control.label); };
+                    return leafletControl;
+                }
+            });
+            (new Control({ position: control.position })).addTo(map);
+        })();
+    }
+
 </script>
-
 </body>
 </html>
