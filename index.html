@@ -209,6 +209,7 @@
     });
 
     offLeashAreas.bindPopup(function (evt) {
+        if (evt.feature.properties.Location == null) evt.feature.properties.Location = '';
         return L.Util.template('<p>{Times_1}<br>{Location}</p>', evt.feature.properties);
     });
 
