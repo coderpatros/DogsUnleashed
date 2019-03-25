@@ -36,9 +36,9 @@ var map, locationMarker, locationAccuracyCircle;
 
 // setup base map
 map = L.map('map').setView([ -26.653127, 153.067969 ], 11);
-L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v10/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoicGF0cm9zIiwiYSI6ImNpenNjcjk4cTAwenIycXBjdjVnbHFwdzUifQ.fk6Q_TamIFNjQDFZ5AZVNA', {
-    attribution: 'Map data &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://mapbox.com">Mapbox</a>',
-    maxZoom: 18
+L.esri.dynamicMapLayer({
+    url: 'https://cloud.locate.scc.qld.gov.au/arcgis/rest/services/ImageryBaseMapsEarthCover/LightGreyMap_SCRC/MapServer',
+    layers: [25]
 }).addTo(map);
 L.control.scale().addTo(map);
 
