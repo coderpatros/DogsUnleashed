@@ -52,13 +52,13 @@ var controls = [
 var pois = [
     POI(
         'Dog Water Bowls',
-        'https://gisservices.scc.qld.gov.au/arcgis/rest/services/Structure/Structure_SCRC/MapServer/1',
+        'https://gislegacy.scc.qld.gov.au/arcgis/rest/services/Structure/Structure_SCRC/MapServer/1',
         'markers/water.png',
         "AssetSubType='Dog Bowl'"
     )
 //        POI(
 //            'Beach Access Point',
-//            'https://gisservices.scc.qld.gov.au/arcgis/rest/services/Society/Society_SCRC/MapServer/5',
+//            'https://gislegacy.scc.qld.gov.au/arcgis/rest/services/Society/Society_SCRC/MapServer/5',
 //            'markers/beach-access.png',
 //            "AccessType='Pedestrian Access'"
 //        )
@@ -92,7 +92,7 @@ var offLeashLegendItems = [
 ];
 
 var offLeashAreas = L.esri.featureLayer({
-    url: 'https://gisservices.scc.qld.gov.au/arcgis/rest/services/Boundaries/Boundaries_SCRC/MapServer/6',
+    url: 'https://gislegacy.scc.qld.gov.au/arcgis/rest/services/Boundaries/Boundaries_SCRC/MapServer/6',
     style: function (feature) {
         var style = {
             fillOpacity: 0.5,
