@@ -54,7 +54,7 @@ var pois = [
         'Dog Water Bowls',
         'https://gislegacy.scc.qld.gov.au/arcgis/rest/services/Structure/Structure_SCRC/MapServer/1',
         'markers/water.png',
-        "AssetSubType='Dog Bowl'"
+        "FeatureTypeCode='WO01'"
     )
 //        POI(
 //            'Beach Access Point',
