@@ -52,7 +52,7 @@ var controls = [
 var pois = [
     POI(
         'Dog Water Bowls',
-        'https://gislegacy.scc.qld.gov.au/arcgis/rest/services/Structure/Structure_SCRC/MapServer/1',
+        'https://geopublic.scc.qld.gov.au/arcgis/rest/services/Structure/Structure_SCRC/MapServer/1',
         'markers/water.png',
         "FeatureTypeCode='WO01'"
     )
@@ -70,17 +70,15 @@ var DOGS_NEVER_OK = "#ff0000";
 var DOGS_ON_LEASH = "#ff6600";
 var OTHER = "#000000";
 
+// keyed on Local Law 2 category code (LL2_Category)
 var offLeashStyles = {
-    "Dogs prohibited at all times": DOGS_NEVER_OK,
-    "Prohibited animal area at all times": DOGS_NEVER_OK,
-    "Dogs off leash at all times": DOGS_OK,
-    "Dogs off leash at times indicated on signs": DOGS_SOMETIMES_OK,
-    "Dogs off leash 4pm to 8am": DOGS_SOMETIMES_OK,
-    "Dogs off leash 5am to 8am and 5pm to 8pm": DOGS_SOMETIMES_OK,
-    "Dogs off leash May to October, 4pm to 8am": DOGS_SOMETIMES_OK,
-    "Pedestrian Thoroughfare - dogs on leash at all times": DOGS_ON_LEASH,
-    "Spectators with dogs on leash at all times allowed": DOGS_ON_LEASH,
-    "Other": OTHER
+    "DOLAT": DOGS_OK,              // off leash at all times
+    "DOLOS": DOGS_SOMETIMES_OK,    // off leash at specified times
+    "TMSEAS": DOGS_SOMETIMES_OK,   // off leash seasonally at specified times
+    "ONLSH": DOGS_ON_LEASH,        // on leash at all times
+    "PROHIB": DOGS_NEVER_OK,       // prohibited at all times
+    "PROHBS": DOGS_NEVER_OK,       // prohibited at all times (seasonal)
+    "PROHEV": DOGS_NEVER_OK        // prohibited other than during approved events
 };
 
 var offLeashLegendItems = [
@@ -92,14 +90,14 @@ var offLeashLegendItems = [
 ];
 
 var offLeashAreas = L.esri.featureLayer({
-    url: 'https://gislegacy.scc.qld.gov.au/arcgis/rest/services/Boundaries/Boundaries_SCRC/MapServer/6',
+    url: 'https://geopublic.scc.qld.gov.au/arcgis/rest/services/Boundaries/Boundaries_SCRC/MapServer/15',
     style: function (feature) {
         var style = {
             fillOpacity: 0.5,
             weight: 2
         };
 
-        style.color = offLeashStyles[feature.properties.Times_1] || OTHER;
+        style.color = offLeashStyles[feature.properties.LL2_Category] || OTHER;
         style.fillColor = style.color;
 
         return style;
@@ -107,8 +105,11 @@ var offLeashAreas = L.esri.featureLayer({
 });
 
 offLeashAreas.bindPopup(function (evt) {
-    if (evt.feature.properties.Location == null) evt.feature.properties.Location = '';
-    return L.Util.template('<p>{Times_1}<br>{Location}</p>', evt.feature.properties);
+    var properties = evt.feature.properties;
+    return L.Util.template('<p>{description}<br>{location}</p>', {
+        description: properties.LL2_CategoryDescription || '',
+        location: properties.Location || ''
+    });
 });
 
 offLeashAreas.addTo(map);
