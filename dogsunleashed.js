@@ -36,9 +36,9 @@ var map, locationMarker, locationAccuracyCircle;
 
 // setup base map
 map = L.map('map').setView([ -26.653127, 153.067969 ], 11);
-L.esri.dynamicMapLayer({
-    url: 'https://cloud.locate.scc.qld.gov.au/arcgis/rest/services/ImageryBaseMapsEarthCover/LightGreyMap_SCRC/MapServer',
-    layers: [25]
+// Sunshine Coast Council "Street Map Grey WebMerc" vector tile basemap (ArcGIS Online item ID)
+L.esri.Vector.vectorTileLayer('414c2168f3d0450699547b63abfad940', {
+    attribution: 'Sunshine Coast Council'
 }).addTo(map);
 L.control.scale().addTo(map);
 
